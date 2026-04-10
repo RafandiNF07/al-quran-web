@@ -1,9 +1,9 @@
 // src/services/api.ts
 import axios from 'axios';
 import type { ApiResponse, SuratBase, SuratDetail, SuratTafsir } from '../types/quran';
-
+const API_KEY = import.meta.env.VITE_API_KEY;
 const apiClient = axios.create({
-  baseURL: 'https://equran.id/api/v2',
+  baseURL: API_KEY,
   timeout: 10000,
 });
 
