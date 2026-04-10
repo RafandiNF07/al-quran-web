@@ -1,18 +1,19 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { Home } from './pages/Home';
-import { DetailSurat } from './pages/DetailSurat';
-
+import { Outlet } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-50 text-gray-900">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/surat/:nomor" element={<DetailSurat />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+    <>
+      <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-teal-100">
+        <Navbar />
+
+        <main className="container mx-auto p-4">
+          <Outlet />
+        </main>
+
+        <Footer/>
       </div>
-    </BrowserRouter>
+    </>
   );
 }
 

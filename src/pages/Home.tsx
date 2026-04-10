@@ -4,7 +4,7 @@ import { quranService } from '../services/api';
 import { CardSurat } from '../components/CardSurat';
 import type { SuratBase } from '../types/quran';
 
-export const Home = () => {
+function Home() {
   const [daftarSurat, setDaftarSurat] = useState<SuratBase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +48,8 @@ export const Home = () => {
     return (
       surat.namaLatin.toLowerCase().includes(normalizedQuery) ||
       surat.arti.toLowerCase().includes(normalizedQuery) ||
-      surat.nomor.toString().includes(normalizedQuery)
+      surat.nomor.toString().includes(normalizedQuery) ||
+      surat.tempatTurun.toLocaleLowerCase().includes(normalizedQuery)
     );
   });
 
@@ -62,9 +63,6 @@ export const Home = () => {
 
   return (
     <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <h1 className="mb-2 text-center text-3xl font-bold text-emerald-800">Al-Quran Digital</h1>
-      <p className="mb-8 text-center text-gray-600">Jelajahi surat, ayat, dan tafsir dengan cepat.</p>
-
       <div className="mx-auto mb-6 max-w-lg">
         <input
           type="text"
@@ -87,3 +85,5 @@ export const Home = () => {
     </div>
   );
 };
+
+export default Home;

@@ -6,7 +6,7 @@ import type { SuratDetail, SuratTafsir } from '../types/quran';
 
 type ActiveTab = 'ayat' | 'tafsir';
 
-export const DetailSurat = () => {
+function DetailSurat() {
 	const { nomor } = useParams();
 
 	const [detailSurat, setDetailSurat] = useState<SuratDetail | null>(null);
@@ -176,3 +176,4 @@ export const DetailSurat = () => {
 		</div>
 	);
 };
+export default DetailSurat;
