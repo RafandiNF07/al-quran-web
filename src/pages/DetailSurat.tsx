@@ -4,7 +4,14 @@ import { Link, useParams } from 'react-router-dom';
 import { quranService } from '../services/api';
 import type { SuratDetail, SuratTafsir } from '../types/quran';
 
-
+const QORI_LIST = [
+  { id: '01', name: 'Abdullah Al-Juhany' },
+  { id: '02', name: 'Abdul-Muhsin Al-Qasim' },
+  { id: '03', name: 'Abdurrahman as-Sudais' },
+  { id: '04', name: 'Ibrahim Al-Dossari' },
+  { id: '05', name: 'Mishary Rashid Al-Afasy' },
+  { id: '06', name: 'Yasser-Al-Dosari' },
+];
 type ActiveTab = 'ayat' | 'tafsir';
 
 function DetailSurat() {
@@ -15,6 +22,9 @@ function DetailSurat() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<ActiveTab>('ayat');
+	const [selectedQori,setSelectedQori]=useState<string>('06');
+	
+const [isBuffering, setIsBuffering] = useState(false);
 
 	//audio player
 	const [playingId, setPlayingId]=useState<number | null>(null);
@@ -29,11 +39,13 @@ function DetailSurat() {
 			setPlayingId(null);
 		}else{
 			try{
+				setPlayingId(nomorAyat);
+				setIsBuffering(true);
 				audio.pause();
 				audio.src=audioUrl;
 				audio.load();
 				await audio.play();
-				setPlayingId(nomorAyat);
+				setIsBuffering(false);
 			} catch(e){
 				console.error("Playback failed: ",e);
 				setPlayingId(null);
@@ -41,6 +53,7 @@ function DetailSurat() {
 		}
 	}
 	useEffect(() => {
+		
 		let isActive = true;
 		const audio=new Audio();
 		audioRef.current=audio;
@@ -87,6 +100,7 @@ function DetailSurat() {
 		isActive = false;
         audio.pause();
         audioRef.current = null;
+		setPlayingId(null);
 		};
 	}, [nomor]);
 
@@ -120,6 +134,28 @@ function DetailSurat() {
 						<p className="mt-3 text-sm text-gray-500">
 							{detailSurat.jumlahAyat} ayat • {detailSurat.tempatTurun}
 						</p>
+						<button
+							onClick={() => handleAudio(detailSurat.audioFull[selectedQori], 0)} 
+							className={`mt-4 flex items-center gap-2 rounded-full px-6 py-2 text-sm font-semibold transition ${
+								playingId === 0 
+								? 'bg-red-500 text-white' 
+								: 'bg-emerald-600 text-white hover:bg-emerald-700'
+							}`}
+						>
+							{playingId === 0 ? (isBuffering ? '⏳ Memuat...' : '⏹ Berhenti'): '▶ Putar Satu Surat'}
+						</button>
+						<div className="mt-4">
+							<label className="text-xs font-medium text-gray-500 block mb-1">Pilih Qori:</label>
+							<select 
+								value={selectedQori}
+								onChange={(e) => setSelectedQori(e.target.value)}
+								className="rounded-lg border border-emerald-100 bg-white p-2 text-sm text-emerald-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+							>
+								{QORI_LIST.map((qori) => (
+								<option key={qori.id} value={qori.id}>{qori.name}</option>
+								))}
+							</select>
+							</div>
 					</div>
 					<p className="text-4xl text-emerald-700" dir="rtl">
 						{detailSurat.nama}
@@ -134,7 +170,7 @@ function DetailSurat() {
 						className="rounded-xl border border-emerald-100 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
 					>
 						<p className="text-xs font-medium text-gray-500">Surat Sebelumnya</p>
-						<p className="mt-1 text-sm font-semibold text-emerald-900">{suratSebelumnya.namaLatin}</p>
+						<p className="mt-1 text-sm font-semibold text-emerald-900">{suratSebelumnya.nomor}. {suratSebelumnya.namaLatin}</p>
 						<p className="text-xs text-gray-600">{suratSebelumnya.jumlahAyat} ayat</p>
 					</Link>
 				) : (
@@ -150,7 +186,7 @@ function DetailSurat() {
 						className="rounded-xl border border-emerald-100 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
 					>
 						<p className="text-xs font-medium text-gray-500">Surat Selanjutnya</p>
-						<p className="mt-1 text-sm font-semibold text-emerald-900">{suratSelanjutnya.namaLatin}</p>
+						<p className="mt-1 text-sm font-semibold text-emerald-900">{suratSelanjutnya.nomor}. {suratSelanjutnya.namaLatin}</p>
 						<p className="text-xs text-gray-600">{suratSelanjutnya.jumlahAyat} ayat</p>
 					</Link>
 				) : (
@@ -189,7 +225,7 @@ function DetailSurat() {
 							<div className="flex justify-between items-start mb-4">
 								<p className="text-sm font-medium text-emerald-700">Ayat {ayat.nomorAyat}</p>
 								<button 
-									onClick={() => handleAudio(ayat.audio['01'], ayat.nomorAyat)}
+									onClick={() => handleAudio(ayat.audio[selectedQori], ayat.nomorAyat)}
 									className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
 										playingId === ayat.nomorAyat 
 										? 'bg-red-100 text-red-600' 
@@ -197,12 +233,11 @@ function DetailSurat() {
 									}`}
 								>
 									{playingId === ayat.nomorAyat ? (
-										/* Ikon Pause (SVG atau Text) */
-										<span>||</span>
-									) : (
-										/* Ikon Play (SVG atau Text) */
-										<span className="ml-1">▶</span>
-									)}
+										isBuffering ? (
+											/* Kamu bisa pakai teks atau spinner kecil */
+											<span className="text-[10px] animate-pulse">Wait</span>
+										) : '||'
+									) : '▶'}
 								</button>
 							</div>
 							<p className="text-right text-3xl leading-loose text-emerald-900" dir="rtl">
