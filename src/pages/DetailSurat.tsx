@@ -24,7 +24,7 @@ function DetailSurat() {
 	const [activeTab, setActiveTab] = useState<ActiveTab>('ayat');
 	const [selectedQori,setSelectedQori]=useState<string>('06');
 	
-const [isBuffering, setIsBuffering] = useState(false);
+	const [isBuffering, setIsBuffering] = useState(false);
 
 	//audio player
 	const [playingId, setPlayingId]=useState<number | null>(null);
@@ -34,6 +34,10 @@ const [isBuffering, setIsBuffering] = useState(false);
 	const handleAudio=async(audioUrl:string, nomorAyat:number)=>{
 		const audio = audioRef.current;
 		if(!audio) return;
+		if (!audioUrl) {
+			alert("Audio untuk Qori ini belum tersedia. Silakan pilih Qori lain.");
+			return;
+		}
 		if(nomorAyat===playingId){
 			audio.pause();
 			setPlayingId(null);
@@ -53,7 +57,6 @@ const [isBuffering, setIsBuffering] = useState(false);
 		}
 	}
 	useEffect(() => {
-		
 		let isActive = true;
 		const audio=new Audio();
 		audioRef.current=audio;

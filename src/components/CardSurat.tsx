@@ -12,7 +12,7 @@ export const CardSurat = ({ surat }: CardSuratProps) => {
   return (
     <Link
       to={`/surat/${nomor}`}
-      className="block rounded-xl border border-emerald-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className={`block rounded-xl border ${nomor % 2===0 ? 'border-emerald-500':'border-amber-400'} bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
