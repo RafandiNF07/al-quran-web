@@ -1,8 +1,9 @@
 //detail surat page
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { quranService } from '../services/api';
 import type { SuratDetail, SuratTafsir } from '../types/quran';
+
 
 type ActiveTab = 'ayat' | 'tafsir';
 
@@ -15,9 +16,38 @@ function DetailSurat() {
 	const [error, setError] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<ActiveTab>('ayat');
 
+	//audio player
+	const [playingId, setPlayingId]=useState<number | null>(null);
+	const audioRef=useRef<HTMLAudioElement | null>(null);
+
+	//handle audio
+	const handleAudio=async(audioUrl:string, nomorAyat:number)=>{
+		const audio = audioRef.current;
+		if(!audio) return;
+		if(nomorAyat===playingId){
+			audio.pause();
+			setPlayingId(null);
+		}else{
+			try{
+				audio.pause();
+				audio.src=audioUrl;
+				audio.load();
+				await audio.play();
+				setPlayingId(nomorAyat);
+			} catch(e){
+				console.error("Playback failed: ",e);
+				setPlayingId(null);
+			}
+		}
+	}
 	useEffect(() => {
 		let isActive = true;
-
+		const audio=new Audio();
+		audioRef.current=audio;
+		audio.onended=()=>{
+			setPlayingId(null);
+		}
+		
 		const fetchSuratData = async () => {
 			const nomorSurat = Number(nomor);
 
@@ -54,7 +84,9 @@ function DetailSurat() {
 		fetchSuratData();
 		
 		return () => {
-			isActive = false;
+		isActive = false;
+        audio.pause();
+        audioRef.current = null;
 		};
 	}, [nomor]);
 
@@ -154,7 +186,25 @@ function DetailSurat() {
 				<section className="mt-5 space-y-4">
 					{detailSurat.ayat.map((ayat) => (
 						<article key={ayat.nomorAyat} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-							<p className="mb-4 text-sm font-medium text-emerald-700">Ayat {ayat.nomorAyat}</p>
+							<div className="flex justify-between items-start mb-4">
+								<p className="text-sm font-medium text-emerald-700">Ayat {ayat.nomorAyat}</p>
+								<button 
+									onClick={() => handleAudio(ayat.audio['01'], ayat.nomorAyat)}
+									className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+										playingId === ayat.nomorAyat 
+										? 'bg-red-100 text-red-600' 
+										: 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+									}`}
+								>
+									{playingId === ayat.nomorAyat ? (
+										/* Ikon Pause (SVG atau Text) */
+										<span>||</span>
+									) : (
+										/* Ikon Play (SVG atau Text) */
+										<span className="ml-1">▶</span>
+									)}
+								</button>
+							</div>
 							<p className="text-right text-3xl leading-loose text-emerald-900" dir="rtl">
 								{ayat.teksArab}
 							</p>
