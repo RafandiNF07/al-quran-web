@@ -1,6 +1,7 @@
 // src/services/api.ts
 import axios from 'axios';
 import type { ApiResponse, SuratBase, SuratDetail, SuratTafsir } from '../types/quran';
+
 const API_KEY = import.meta.env.VITE_API_KEY;
 const apiClient = axios.create({
   baseURL: API_KEY,
@@ -8,6 +9,25 @@ const apiClient = axios.create({
 });
 
 const getData = <T>(response: ApiResponse<T>): T => response.data;
+
+export function getApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    if (error.code === 'ECONNABORTED') {
+      return 'Permintaan ke server terlalu lama. Silakan coba lagi.';
+    }
+
+    if (!error.response) {
+      return 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+    }
+
+    const responseData = error.response.data as { message?: string } | undefined;
+    if (responseData?.message) {
+      return responseData.message;
+    }
+  }
+
+  return 'Terjadi kesalahan. Silakan coba lagi beberapa saat.';
+}
 
 export const quranService = {
   getDaftarSurat: async (): Promise<SuratBase[]> => {

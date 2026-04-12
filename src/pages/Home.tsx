@@ -1,57 +1,29 @@
-// src/pages/Home.tsx
-import { useState, useEffect } from 'react';
-import { quranService } from '../services/api';
+import { useMemo, useState } from 'react';
 import { CardSurat } from '../components/CardSurat';
-import type { SuratBase } from '../types/quran';
+import { useDaftarSurat } from '../hooks/useDaftarSurat';
 
 function Home() {
-  const [daftarSurat, setDaftarSurat] = useState<SuratBase[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { daftarSurat, loading, error } = useDaftarSurat();
   const [query, setQuery] = useState('');
-
-  useEffect(() => {
-    let isActive = true;
-
-    const fetchDaftarSurat = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await quranService.getDaftarSurat();
-        if (isActive) {
-          setDaftarSurat(data);
-        }
-      } catch {
-        if (isActive) {
-          setError('Gagal memuat daftar surat. Coba lagi beberapa saat.');
-        }
-      } finally {
-        if (isActive) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchDaftarSurat();
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   const normalizedQuery = query.trim().toLowerCase();
 
-  const filteredSurat = daftarSurat.filter((surat) => {
-    if (!normalizedQuery) {
-      return true;
-    }
+  const filteredSurat = useMemo(
+    () =>
+      daftarSurat.filter((surat) => {
+        if (!normalizedQuery) {
+          return true;
+        }
 
-    return (
-      surat.namaLatin.toLowerCase().includes(normalizedQuery) ||
-      surat.arti.toLowerCase().includes(normalizedQuery) ||
-      surat.nomor.toString().includes(normalizedQuery) ||
-      surat.tempatTurun.toLocaleLowerCase().includes(normalizedQuery)
-    );
-  });
+        return (
+          surat.namaLatin.toLowerCase().includes(normalizedQuery) ||
+          surat.arti.toLowerCase().includes(normalizedQuery) ||
+          surat.nomor.toString().includes(normalizedQuery) ||
+          surat.tempatTurun.toLowerCase().includes(normalizedQuery)
+        );
+      }),
+    [daftarSurat, normalizedQuery]
+  );
 
   if (loading) {
     return <div className="p-10 text-center text-gray-600">Memuat daftar surat...</div>;
@@ -71,9 +43,11 @@ function Home() {
           placeholder="Cari nama surat, arti, tempat turun, atau nomor..."
           className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 outline-none transition focus:border-emerald-500"
         />
-      {filteredSurat.length > 0 && normalizedQuery.length>0?(
-       <p className='w-full rounded-xl px-4 py-3 outline-none transition focus:border-emerald-500'>{`hasil yang ditemukan adalah: ${filteredSurat.length}`}</p>):null  
-      }
+        {filteredSurat.length > 0 && normalizedQuery.length > 0 ? (
+          <p className="w-full rounded-xl px-4 py-3 outline-none transition focus:border-emerald-500">
+            {`hasil yang ditemukan adalah: ${filteredSurat.length}`}
+          </p>
+        ) : null}
       </div>
       {filteredSurat.length === 0 ? (
         <p className="py-10 text-center text-gray-600">Surat tidak ditemukan.</p>
@@ -86,6 +60,6 @@ function Home() {
       </div>
     </div>
   );
-};
+}
 
 export default Home;
