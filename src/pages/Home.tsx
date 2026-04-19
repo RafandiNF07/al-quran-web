@@ -1,5 +1,5 @@
 // src/pages/Home.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useDeferredValue, useMemo } from 'react';
 import { quranService } from '../services/api';
 import { CardSurat } from '../components/CardSurat';
 import type { SuratBase } from '../types/quran';
@@ -38,20 +38,21 @@ function Home() {
     };
   }, []);
 
-  const normalizedQuery = query.trim().toLowerCase();
+  const deferredQuery = useDeferredValue(query);
 
-  const filteredSurat = daftarSurat.filter((surat) => {
+  const filteredSurat = useMemo(() => {
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+    
     if (!normalizedQuery) {
-      return true;
+      return daftarSurat;
     }
 
-    return (
+    return daftarSurat.filter((surat) => (
       surat.namaLatin.toLowerCase().includes(normalizedQuery) ||
       surat.arti.toLowerCase().includes(normalizedQuery) ||
-      surat.nomor.toString().includes(normalizedQuery) ||
-      surat.tempatTurun.toLocaleLowerCase().includes(normalizedQuery)
-    );
-  });
+      surat.nomor.toString().includes(normalizedQuery)
+    ));
+  }, [daftarSurat, deferredQuery]);
 
   if (loading) {
     return <div className="p-10 text-center text-gray-600">Memuat daftar surat...</div>;
@@ -68,12 +69,9 @@ function Home() {
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Cari nama surat, arti, tempat turun, atau nomor..."
+          placeholder="Cari nama surat, arti, atau nomor..."
           className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 outline-none transition focus:border-emerald-500"
         />
-      {filteredSurat.length > 0 && normalizedQuery.length>0?(
-       <p className='w-full rounded-xl px-4 py-3 outline-none transition focus:border-emerald-500'>{`hasil yang ditemukan adalah: ${filteredSurat.length}`}</p>):null  
-      }
       </div>
       {filteredSurat.length === 0 ? (
         <p className="py-10 text-center text-gray-600">Surat tidak ditemukan.</p>
