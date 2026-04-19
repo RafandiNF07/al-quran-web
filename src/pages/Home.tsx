@@ -48,8 +48,7 @@ function Home() {
     return (
       surat.namaLatin.toLowerCase().includes(normalizedQuery) ||
       surat.arti.toLowerCase().includes(normalizedQuery) ||
-      surat.nomor.toString().includes(normalizedQuery) ||
-      surat.tempatTurun.toLocaleLowerCase().includes(normalizedQuery)
+      surat.nomor.toString().includes(normalizedQuery)
     );
   });
 
@@ -68,7 +67,7 @@ function Home() {
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Cari nama surat, arti, tempat turun, atau nomor..."
+          placeholder="Cari nama surat, arti, atau nomor..."
           className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 outline-none transition focus:border-emerald-500"
         />
       {filteredSurat.length > 0 && normalizedQuery.length>0?(

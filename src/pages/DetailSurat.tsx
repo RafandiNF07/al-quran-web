@@ -77,14 +77,10 @@ function DetailSurat() {
 				setLoading(true);
 				setError(null);
 
-				const [detail, tafsir] = await Promise.all([
-					quranService.getSuratDetail(nomorSurat),
-					quranService.getTafsirSurat(nomorSurat),
-				]);
+				const detail = await quranService.getSuratDetail(Number(nomor));
 
 				if (isActive) {
 					setDetailSurat(detail);
-					setTafsirSurat(tafsir);
 				}
 			} catch {
 				if (isActive) {
@@ -106,7 +102,23 @@ function DetailSurat() {
 		setPlayingId(null);
 		};
 	}, [nomor]);
-
+	useEffect(() => {
+		let isActive = true;
+		const fetchTafsirAyat = async () => {
+			if(activeTab === 'tafsir' && !tafsirSurat) {
+				try {
+					const tafsirSurat = await quranService.getTafsirSurat(Number(nomor));
+					if(isActive){
+						setTafsirSurat(tafsirSurat);
+					}
+				} catch {
+					setError("gagal mengambil tafsir");
+				}
+			}
+		}
+		fetchTafsirAyat();
+		return()=>{isActive=false}
+	},[activeTab,nomor,tafsirSurat]);
 	if (loading) {
 		return <div className="p-10 text-center text-gray-600">Memuat detail surat...</div>;
 	}
